@@ -1,19 +1,46 @@
-# 🎈 Blank app template
+import streamlit as st
+import zipfile
+import os
 
-A simple Streamlit app template for you to modify!
+# Título de la aplicación
+st.title("Compresión de Archivos")
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+# Instrucciones
+st.write("Sube tus archivos para comprimirlos en un archivo ZIP.")
 
-### How to run it on your own machine
+# Subir archivos
+uploaded_files = st.file_uploader("Elige los archivos", accept_multiple_files=True)
 
-1. Install the requirements
+# Botón para comprimir los archivos
+if st.button("Comprimir"):
+    if uploaded_files:
+        # Crear un archivo ZIP
+        with zipfile.ZipFile("files.zip", 'w') as zipf:
+            for uploaded_file in uploaded_files:
+                # Guardar el archivo subido temporalmente
+                with open(uploaded_file.name, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                
+                # Agregar el archivo al ZIP
+                zipf.write(uploaded_file.name)
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+                # Eliminar el archivo temporal
+                os.remove(uploaded_file.name)
 
-2. Run the app
+        # Mostrar el éxito de la compresión
+        st.success("¡Archivos comprimidos con éxito!")
 
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+        # Descargar el archivo ZIP
+        with open("files.zip", "rb") as f:
+            st.download_button(
+                label="Descargar Archivo ZIP",
+                data=f,
+                file_name="files.zip",
+                mime="application/zip"
+            )
+    else:
+        st.error("Por favor, sube al menos un archivo para comprimir.")
+
+# Opcional: Limpiar después de la descarga
+if os.path.exists("compressed_files.zip"):
+    os.remove("compressed_files.zip")
